@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AQUARIFT — Beyond the Tide</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <canvas id="game-canvas"></canvas>
+    
+    <div id="ui-layer">
+      <!-- HUD during race -->
+      <div id="hud" class="hidden">
+        <div id="speed-display">Speed: <span id="speed-val">0</span> kn</div>
+        <div id="boost-display">
+          Boost: 
+          <div id="boost-bar"><div id="boost-fill"></div></div>
+        </div>
+        <div id="timer-display">Time: <span id="timer-val">00:00.00</span></div>
+        <div id="lap-display">Beacon: <span id="beacon-val">0 / 8</span></div>
+      </div>
+      
+      <!-- Main Menu -->
+      <div id="main-menu" class="menu">
+        <h1>AQUARIFT</h1>
+        <h2>Beyond the Tide</h2>
+        <div class="menu-options">
+          <button id="btn-race">Race</button>
+          <button id="btn-cruise">Free Cruise</button>
+        </div>
+        <div class="instructions">
+          WASD/Arrows to drive.<br>Space to drift.<br>Shift to boost.<br>C to change camera.
+        </div>
+      </div>
+    </div>
+    <div class="vignette"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

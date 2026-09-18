@@ -1,0 +1,144 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+  user-select: none;
+}
+
+#game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* HUD */
+#hud {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+#boost-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#boost-bar {
+  width: 150px;
+  height: 15px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#boost-fill {
+  width: 100%;
+  height: 100%;
+  background: #00ffcc;
+  transition: width 0.1s linear;
+}
+
+/* Menu */
+.menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 40px;
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.menu h1 {
+  margin: 0 0 10px 0;
+  font-size: 3.5rem;
+  letter-spacing: 5px;
+  color: #00ffcc;
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.menu h2 {
+  margin: 0 0 40px 0;
+  font-size: 1.5rem;
+  font-weight: normal;
+  letter-spacing: 2px;
+}
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.menu-options button {
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  background: transparent;
+  color: #fff;
+  border: 2px solid #00ffcc;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.menu-options button:hover {
+  background: #00ffcc;
+  color: #000;
+  box-shadow: 0 0 15px rgba(0,255,204,0.5);
+}
+
+.instructions {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #aaa;
+}
+
+/* Vignette / Speed lines effect */
+.vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 150px rgba(0,0,0,0.8) inset;
+  pointer-events: none;
+  z-index: 5;
+}
