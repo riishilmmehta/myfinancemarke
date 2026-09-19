@@ -1,40 +1,496 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AQUARIFT — Beyond the Tide</title>
-    <link rel="stylesheet" href="/style.css">
-  </head>
-  <body>
-    <canvas id="game-canvas"></canvas>
-    
-    <div id="ui-layer">
-      <!-- HUD during race -->
-      <div id="hud" class="hidden">
-        <div id="speed-display">Speed: <span id="speed-val">0</span> kn</div>
-        <div id="boost-display">
-          Boost: 
-          <div id="boost-bar"><div id="boost-fill"></div></div>
-        </div>
-        <div id="timer-display">Time: <span id="timer-val">00:00.00</span></div>
-        <div id="lap-display">Beacon: <span id="beacon-val">0 / 8</span></div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FinPilot Real — Live Market, Ledger & Portfolio</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{--blue:#0052FF;--navy:#091E42;--green:#00C853;--bg:#F8F9FA;--card:#fff;--text:#0B1630;--muted:#667085;--line:#E7EAF0;--red:#FF3B30;--orange:#FF9500;--purple:#8B5CF6;--shadow:0 18px 50px rgba(9,30,66,.08)}
+[data-theme="dark"]{--bg:#121212;--card:#1A1D23;--text:#F4F7FB;--muted:#9BA5B5;--line:#2B303A;--shadow:0 18px 50px rgba(0,0,0,.28)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}
+.app{display:flex;min-height:100vh}.sidebar{width:250px;background:var(--card);border-right:1px solid var(--line);padding:22px 15px;position:fixed;inset:0 auto 0 0;z-index:20}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 10px 25px;font-weight:800;font-size:20px}.brandmark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--blue),#2e7cff);display:grid;place-items:center;color:white}
+.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:var(--muted);padding:12px;border-radius:12px;text-align:left;display:flex;gap:11px;align-items:center}.nav button:hover,.nav button.active{background:#0052ff10;color:var(--blue);font-weight:700}
+.side-bottom{position:absolute;bottom:18px;left:15px;right:15px}.mode{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--line);border-radius:14px}
+.main{margin-left:250px;width:calc(100% - 250px);padding:26px 30px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:24px}.title h1{margin:0 0 5px;font-size:28px}.title p{margin:0;color:var(--muted)}.actions{display:flex;gap:8px}
+.iconbtn,.primary,.ghost{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:11px;padding:10px 13px}.primary{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}.ghost:hover{border-color:#b7c0d0}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;background:#00c85315;color:var(--green)}
+.live.off{background:#ff3b3015;color:var(--red)}.pulse{width:8px;height:8px;border-radius:50%;background:currentColor;animation:pl 1.4s infinite}@keyframes pl{50%{opacity:.3}}
+.page{display:none}.page.active{display:block}.grid{display:grid;gap:16px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:19px;box-shadow:var(--shadow)}.metric .label{color:var(--muted);font-weight:600}.metric .value{font-size:26px;font-weight:800;margin:13px 0 5px}.up{color:var(--green)}.down{color:var(--red)}.small{font-size:12px;color:var(--muted)}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:25px 0 13px}.section-title h2{font-size:18px;margin:0}.section-title span{font-size:12px;color:var(--muted)}
+.chart-card{height:360px}.chart-wrap{height:290px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 9px;border-bottom:1px solid var(--line);text-align:left}.table th{font-size:12px;color:var(--muted)}.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.pill.green{background:#00c85315;color:var(--green)}.pill.red{background:#ff3b3015;color:var(--red)}.pill.blue{background:#0052ff12;color:var(--blue)}.pill.orange{background:#ff950015;color:var(--orange)}.pill.gray{background:#66708515;color:var(--muted)}
+.hero{background:linear-gradient(135deg,#091E42,#0052FF 70%,#2e7cff);color:#fff;border:0;overflow:hidden;position:relative}.hero h2{font-size:24px;margin:0 0 8px}.hero p{max-width:700px;color:#dbe7ff;line-height:1.6}
+input,select{background:var(--bg);color:var(--text);border:1px solid var(--line);padding:11px;border-radius:10px;outline:none}input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #0052ff15}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.alloc{display:flex;height:16px;border-radius:10px;overflow:hidden;background:var(--line);margin:12px 0}.alloc i{display:block;height:100%}
+.kpi{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}.kpi:last-child{border:0}
+.notice{padding:12px 14px;border-radius:12px;background:#0052ff09;border:1px solid #0052ff20;line-height:1.5}.danger{background:#ff3b300a;border-color:#ff3b3025}
+.spark{width:90px;height:26px}.toast{position:fixed;right:22px;bottom:22px;background:var(--navy);color:#fff;padding:13px 16px;border-radius:12px;display:none;z-index:50}
+.modal{position:fixed;inset:0;background:#0008;display:none;place-items:center;z-index:40;padding:20px}.modal.show{display:grid}.modalbox{width:min(560px,100%);background:var(--card);border-radius:20px;padding:22px;border:1px solid var(--line)}
+.footer-note{margin-top:18px;color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:1050px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}.sidebar{width:78px}.brand span,.nav button span,.side-bottom .mode span{display:none}.nav button{justify-content:center}.main{margin-left:78px;width:calc(100% - 78px)}}
+@media(max-width:720px){.g4,.g3,.g2,.formgrid{grid-template-columns:1fr}.sidebar{width:62px;padding:16px 8px}.main{margin-left:62px;width:calc(100% - 62px);padding:18px 13px}}
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brandmark"><i data-lucide="landmark"></i></div><span>FinPilot</span></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard"><i data-lucide="layout-dashboard"></i><span>Command Center</span></button>
+    <button data-page="market"><i data-lucide="candlestick-chart"></i><span>Market Lab</span></button>
+    <button data-page="portfolio"><i data-lucide="pie-chart"></i><span>Portfolio</span></button>
+    <button data-page="planner"><i data-lucide="wallet-cards"></i><span>Wealth Planner</span></button>
+    <button data-page="ledger"><i data-lucide="receipt"></i><span>Daily Ledger</span></button>
+    <button data-page="simulator"><i data-lucide="flask-conical"></i><span>Simulator</span></button>
+    <button data-page="learn"><i data-lucide="graduation-cap"></i><span>Learn</span></button>
+  </nav>
+  <div class="side-bottom"><div class="mode"><span>Theme</span><button class="iconbtn" id="themeBtn"><i data-lucide="moon"></i></button></div></div>
+</aside>
+
+<main class="main">
+<header class="top">
+  <div class="title"><h1 id="pageTitle">Financial Command Center</h1><p id="pageSub">Live NSE data via Yahoo Finance · data auto-refreshes every 60s</p></div>
+  <div class="actions"><span class="live" id="liveBadge"><span class="pulse"></span>LIVE</span><button class="ghost" id="refresh"><i data-lucide="refresh-cw"></i></button><button class="primary" id="addMoney"><i data-lucide="plus"></i> Add entry</button></div>
+</header>
+
+<section class="page active" id="dashboard">
+  <div class="grid g4">
+    <div class="card metric"><div class="label">Net cash (from ledger)</div><div class="value" id="cash">₹0</div><div class="small" id="cashSub">No entries yet</div></div>
+    <div class="card metric"><div class="label">Total income</div><div class="value" id="income">₹0</div><div class="small" id="incomeSub">—</div></div>
+    <div class="card metric"><div class="label">Total expenses</div><div class="value" id="expenses">₹0</div><div class="small" id="expSub">—</div></div>
+    <div class="card metric"><div class="label">Portfolio value</div><div class="value" id="portVal">₹0</div><div class="small" id="portChg">Add holdings in Portfolio tab</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card chart-card"><div class="section-title"><h2>NIFTY 50 — 1 month</h2><span id="niftyLbl">Yahoo Finance</span></div><div class="chart-wrap"><canvas id="niftyChart"></canvas></div></div>
+    <div class="card chart-card"><div class="section-title"><h2>Spending by category</h2><span>From your ledger</span></div><div class="chart-wrap"><canvas id="catChart"></canvas></div></div>
+  </div>
+  <div class="section-title"><h2>Live watchlist</h2><span>NSE · Yahoo Finance · 60s refresh</span></div>
+  <div class="card"><table class="table"><thead><tr><th>Symbol</th><th class="num">Price</th><th class="num">1D %</th><th>30D trend</th><th>RSI(14)</th><th>PE</th></tr></thead><tbody id="watch"></tbody></table></div>
+</section>
+
+<section class="page" id="market">
+  <div class="grid g4">
+    <div class="card metric"><div class="label">NIFTY 50</div><div class="value" id="niftyVal">—</div><div class="small" id="niftyChg">—</div></div>
+    <div class="card metric"><div class="label">Advancers / Decliners</div><div class="value" id="breadth">—</div><div class="small">Of your watchlist symbols</div></div>
+    <div class="card metric"><div class="label">Most active (volume)</div><div class="value" id="volLeader" style="font-size:20px">—</div><div class="small" id="volAmt">—</div></div>
+    <div class="card metric"><div class="label">Last update</div><div class="value" id="updAt" style="font-size:20px">—</div><div class="small">Market hours: 9:15–15:30 IST</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card chart-card"><div class="section-title"><h2 id="detTitle">Select a symbol</h2><span id="detSub">Click any row in the table below</span></div><div class="chart-wrap"><canvas id="detChart"></canvas></div></div>
+    <div class="card"><div class="section-title"><h2>Quote detail</h2><span id="detName">—</span></div>
+      <div class="kpi-list" id="detKpis"><div class="kpi"><span>Pick a stock from the table →</span><b>—</b></div></div>
+    </div>
+  </div>
+  <div class="section-title"><h2>NSE universe</h2><span>Click a row for full detail</span></div>
+  <div class="card"><table class="table"><thead><tr><th>Symbol</th><th class="num">Price</th><th class="num">1D %</th><th class="num">Volume</th><th class="num">52W High</th><th class="num">52W Low</th><th class="num">Market Cap</th></tr></thead><tbody id="marketTable"></tbody></table></div>
+</section>
+
+<section class="page" id="portfolio">
+  <div class="grid g4">
+    <div class="card metric"><div class="label">Invested</div><div class="value" id="pInvested">₹0</div><div class="small">Σ qty × avg buy price</div></div>
+    <div class="card metric"><div class="label">Current value</div><div class="value" id="pCurrent">₹0</div><div class="small">Live prices</div></div>
+    <div class="card metric"><div class="label">Unrealized P&L</div><div class="value" id="pPnl">₹0</div><div class="small" id="pPnlPct">—</div></div>
+    <div class="card metric"><div class="label">Holdings</div><div class="value" id="pCount">0</div><div class="small">Saved in this browser</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><div class="section-title"><h2>Add holding</h2></div>
+      <div class="formgrid">
+        <div class="field"><label>Symbol (NSE)</label><select id="hSym"></select></div>
+        <div class="field"><label>Quantity</label><input id="hQty" type="number" value="1" min="0.001" step="any"></div>
+        <div class="field"><label>Avg buy price (₹)</label><input id="hPrice" type="number" value="100" min="0" step="any"></div>
+        <div class="field"><label>Date bought</label><input id="hDate" type="date"></div>
       </div>
-      
-      <!-- Main Menu -->
-      <div id="main-menu" class="menu">
-        <h1>AQUARIFT</h1>
-        <h2>Beyond the Tide</h2>
-        <div class="menu-options">
-          <button id="btn-race">Race</button>
-          <button id="btn-cruise">Free Cruise</button>
-        </div>
-        <div class="instructions">
-          WASD/Arrows to drive.<br>Space to drift.<br>Shift to boost.<br>C to change camera.
-        </div>
+      <button class="primary" style="margin-top:14px" onclick="addHolding()">Add holding</button>
+    </div>
+    <div class="card"><div class="section-title"><h2>Allocation</h2><span>By current value</span></div>
+      <div class="alloc" id="allocBar"></div><div class="kpi-list" id="allocList"></div>
+    </div>
+  </div>
+  <div class="section-title"><h2>Holdings</h2><span>Live P&L</span></div>
+  <div class="card"><table class="table"><thead><tr><th>Symbol</th><th class="num">Qty</th><th class="num">Avg price</th><th class="num">Live price</th><th class="num">Invested</th><th class="num">Current</th><th class="num">P&L</th><th></th></tr></thead><tbody id="holdings"></tbody></table></div>
+</section>
+
+<section class="page" id="planner">
+  <div class="grid g2">
+    <div class="card"><div class="section-title"><h2>SIP / Goal calculator</h2><span>Financially precise FV</span></div>
+      <div class="formgrid">
+        <div class="field"><label>Starting amount (₹)</label><input id="start" type="number" value="20000"></div>
+        <div class="field"><label>Monthly contribution (₹)</label><input id="monthly" type="number" value="3000"></div>
+        <div class="field"><label>Annual step-up (%)</label><input id="stepup" type="number" value="0" min="0" step="any"></div>
+        <div class="field"><label>Time horizon (years)</label><input id="years" type="number" value="5" min="1"></div>
+        <div class="field"><label>Expected return (% p.a.)</label><input id="rate" type="number" value="8" step=".1"></div>
+        <div class="field"><label>Inflation (% p.a.)</label><input id="infl" type="number" value="6" step=".1"></div>
+      </div>
+      <button class="primary" style="margin-top:14px" onclick="calculatePlan()">Run scenario</button>
+      <div class="grid g3" style="margin-top:16px">
+        <div class="card"><div class="small">Total contributed</div><h2 id="contrib">—</h2></div>
+        <div class="card"><div class="small">Future value (nominal)</div><h2 id="future">—</h2></div>
+        <div class="card"><div class="small">Future value (real)</div><h2 class="up" id="real">—</h2></div>
+      </div>
+      <div class="notice" style="margin-top:15px">Real value = inflation-adjusted, so you see today's purchasing power. Step-up raises your SIP by that % every year.</div>
+    </div>
+    <div class="card chart-card"><div class="section-title"><h2>Projected growth</h2><span id="planSub">Nominal vs real</span></div><div class="chart-wrap"><canvas id="planChart"></canvas></div></div>
+  </div>
+</section>
+
+<section class="page" id="ledger">
+  <div class="grid g4">
+    <div class="card metric"><div class="label">This month income</div><div class="value" id="mIncome">₹0</div><div class="small" id="mIncCnt">—</div></div>
+    <div class="card metric"><div class="label">This month expenses</div><div class="value" id="mExpense">₹0</div><div class="small" id="mExpCnt">—</div></div>
+    <div class="card metric"><div class="label">This month surplus</div><div class="value up" id="mSurplus">₹0</div><div class="small">Income − expenses</div></div>
+    <div class="card metric"><div class="label">Savings rate</div><div class="value up" id="mRate">—</div><div class="small">Surplus ÷ income</div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="section-title"><h2>All entries</h2><span>Persisted in localStorage</span></div>
+    <table class="table"><thead><tr><th>Date</th><th>Type</th><th>Category</th><th class="num">Amount</th><th>Note</th><th></th></tr></thead><tbody id="ledgerBody"></tbody></table>
+  </div>
+</section>
+
+<section class="page" id="simulator">
+  <div class="grid g2">
+    <div class="card"><div class="section-title"><h2>Stress test</h2><span>Instant scenario</span></div>
+      <div class="field"><label>Portfolio value (₹)</label><input id="pval" type="number" value="100000"></div>
+      <div class="field" style="margin-top:12px"><label>Shock (%)</label><input id="shock" type="number" value="-15"></div>
+      <button class="primary" style="margin-top:14px" onclick="stress()">Run stress test</button>
+      <div class="grid g2" style="margin-top:16px"><div class="card"><div class="small">Scenario value</div><h2 id="stressValue">—</h2></div><div class="card"><div class="small">Change</div><h2 class="down" id="stressLoss">—</h2></div></div>
+    </div>
+    <div class="card"><div class="section-title"><h2>Monte Carlo retirement path</h2><span>1,000 random simulations</span></div>
+      <div class="formgrid">
+        <div class="field"><label>Current corpus (₹)</label><input id="mcStart" type="number" value="500000"></div>
+        <div class="field"><label>Monthly addition (₹)</label><input id="mcAdd" type="number" value="10000"></div>
+        <div class="field"><label>Years</label><input id="mcYears" type="number" value="15"></div>
+        <div class="field"><label>Expected return % (mean)</label><input id="mcRet" type="number" value="11"></div>
+        <div class="field"><label>Volatility % (st.dev)</label><input id="mcVol" type="number" value="16"></div>
+        <div class="field"><label>Inflation %</label><input id="mcInfl" type="number" value="6"></div>
+      </div>
+      <button class="primary" style="margin-top:14px" onclick="monteCarlo()">Simulate</button>
+      <div class="grid g3" style="margin-top:16px">
+        <div class="card"><div class="small">Median outcome</div><h2 id="mcMed">—</h2></div>
+        <div class="card"><div class="small">10th percentile (bad)</div><h2 class="down" id="mcP10">—</h2></div>
+        <div class="card"><div class="small">90th percentile (good)</div><h2 class="up" id="mcP90">—</h2></div>
       </div>
     </div>
-    <div class="vignette"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="section-title"><h2>Simulation paths</h2><span>50 of 1,000 shown · real (inflation-adjusted) ₹</span></div><div class="chart-wrap" style="height:300px"><canvas id="mcChart"></canvas></div></div>
+</section>
+
+<section class="page" id="learn">
+  <div class="grid g3">
+    <div class="card"><b>RSI (14)</b><p class="small">Above 70 = overbought, below 30 = oversold. A momentum hint, not a command.</p></div>
+    <div class="card"><b>Real vs nominal returns</b><p class="small">At 6% inflation, a 12% return is ~5.7% in real purchasing power. Always model inflation.</p></div>
+    <div class="card"><b>Monte Carlo</b><p class="small">Instead of one guess, random yearly returns produce a range of outcomes — showing uncertainty honestly.</p></div>
+    <div class="card"><b>Volatility drag</b><p class="small">A 50% loss needs a 100% gain to recover. Big swings cost more than they appear.</p></div>
+    <div class="card"><b>Step-up SIP</b><p class="small">Raising contributions with income beats chasing returns. Easiest way to grow a corpus.</p></div>
+    <div class="card"><b>Regulatory note</b><p class="small">Personalized buy/sell advice in India requires SEBI Investment Adviser registration. Keep tools in education/simulation mode otherwise.</p></div>
+  </div>
+</section>
+
+<p class="footer-note">FinPilot · Live data: Yahoo Finance (unofficial endpoint — use a licensed vendor for production). Ledger & holdings persist in your browser via localStorage. Not investment advice.</p>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="modalbox"><div class="section-title"><h2>Add ledger entry</h2><button class="iconbtn" onclick="closeModal()">×</button></div>
+  <div class="formgrid">
+    <div class="field"><label>Type</label><select id="entryType"><option>Income</option><option>Expense</option></select></div>
+    <div class="field"><label>Amount (₹)</label><input id="entryAmount" type="number" value="100" min="0" step="any"></div>
+    <div class="field"><label>Category</label><select id="entryCat"><option>Salary</option><option>Food</option><option>Rent</option><option>Transport</option><option>Utilities</option><option>Entertainment</option><option>Health</option><option>Investment</option><option>Other</option></select></div>
+    <div class="field"><label>Date</label><input id="entryDate" type="date"></div>
+  </div>
+  <div class="field" style="margin-top:12px"><label>Note (optional)</label><input id="entryNote" placeholder="e.g. Grocery run"></div>
+  <button class="primary" style="margin-top:14px" onclick="saveEntry()">Save entry</button></div></div>
+
+<script>
+/* ================= CONFIG ================= */
+const SYMBOLS = ['RELIANCE.NS','TCS.NS','HDFCBANK.NS','INFY.NS','ITC.NS','SBIN.NS','BHARTIARTL.NS','LT.NS','KOTAKBANK.NS','AXISBANK.NS'];
+const INDEX = '^NSEI';
+const PROXY = u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u);
+const INR = n => '₹' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const PCT = n => (n>=0?'+':'') + Number(n).toFixed(2) + '%';
+const $ = s => document.querySelector(s);
+
+/* ================= NAV / THEME ================= */
+const pages={dashboard:['Financial Command Center','Live NSE data via Yahoo Finance · auto-refresh 60s'],market:['Market Lab','Live quotes, breadth, and per-stock detail'],portfolio:['Portfolio','Track holdings with live P&L — saved locally'],planner:['Wealth Planner','Precise SIP math: step-up, inflation, real returns'],ledger:['Daily Ledger','Persistent income & expense tracking'],simulator:['Portfolio Simulator','Stress tests + Monte Carlo uncertainty'],learn:['Learning Lab','Concepts behind every number']};
+function go(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('#pageTitle').textContent=pages[id][0];$('#pageSub').textContent=pages[id][1];window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+$('#themeBtn').onclick=()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem('finTheme',document.documentElement.dataset.theme)};
+if(localStorage.getItem('finTheme'))document.documentElement.dataset.theme=localStorage.getItem('finTheme');
+
+/* ================= MARKET DATA (Yahoo via CORS proxy) ================= */
+const state = { quotes:{}, hist:{}, loaded:false };
+async function yahoo(path){
+  const r = await fetch(PROXY('https://query1.finance.yahoo.com'+path), {signal:AbortSignal.timeout(12000)});
+  if(!r.ok) throw new Error('http '+r.status);
+  return r.json();
+}
+async function fetchChart(sym, range='1mo', interval='1d'){
+  const key='finCache_'+sym+'_'+range;
+  try{
+    const j = await yahoo(`/v8/finance/chart/${encodeURIComponent(sym)}?range=${range}&interval=${interval}`);
+    const res = j.chart.result[0];
+    const meta = res.meta;
+    const closes = (res.indicators.quote[0].close||[]).map((c,i)=>c==null?undefined:c);
+    const ts = res.timestamp;
+    const prev = meta.chartPreviousClose ?? meta.previousClose ?? meta.regularMarketPrice;
+    const chgPct = prev ? (meta.regularMarketPrice - prev)/prev*100 : 0;
+    const data = {price:meta.regularMarketPrice, chgPct, prevClose:prev, dayHigh:meta.regularMarketDayHigh, dayLow:meta.regularMarketDayLow, high52:meta.fiftyTwoWeekHigh, low52:meta.fiftyTwoWeekLow, name:meta.shortName||meta.longName||sym, closes:closes.filter(c=>c!=null), ts};
+    localStorage.setItem(key, JSON.stringify({t:Date.now(), data}));
+    return data;
+  }catch(e){
+    const c = localStorage.getItem(key);
+    if(c){ const o=JSON.parse(c); o.data.cached=true; return o.data; }
+    throw e;
+  }
+}
+function rsi(closes, period=14){
+  if(closes.length < period+1) return null;
+  let g=0,l=0;
+  for(let i=closes.length-period;i<closes.length;i++){const d=closes[i]-closes[i-1]; if(d>0)g+=d; else l-=d;}
+  if(l===0) return 100;
+  const rs = g/l; return 100 - 100/(1+rs);
+}
+async function loadMarket(){
+  const badge=$('#liveBadge');
+  try{
+    const all=[INDEX,...SYMBOLS];
+    const results = await Promise.allSettled(all.map(s=>fetchChart(s)));
+    let live=0;
+    results.forEach((r,i)=>{ if(r.status==='fulfilled'){state.hist[all[i]]=r.value; if(!r.value.cached)live++;} });
+    state.loaded=true;
+    badge.classList.remove('off'); badge.innerHTML='<span class="pulse"></span>LIVE';
+    $('#updAt').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    renderMarket(); renderDashboard(); renderPortfolio();
+  }catch(e){
+    badge.classList.add('off'); badge.innerHTML='<span class="pulse"></span>OFFLINE';
+  }
+}
+function sparklineSVG(closes, up){
+  if(!closes||closes.length<2) return '';
+  const w=90,h=26,min=Math.min(...closes),max=Math.max(...closes);
+  const pts=closes.map((c,i)=>((i/(closes.length-1))*w).toFixed(1)+','+((h-2-(c-min)/(max-min||1)*(h-4))).toFixed(1)).join(' ');
+  return '<svg class="spark" viewBox="0 0 90 26"><polyline points="'+pts+'" fill="none" stroke="'+(up?'#00C853':'#FF3B30')+'" stroke-width="1.6"/></svg>';
+}
+function renderMarket(){
+  const rows = SYMBOLS.map(s=>{
+    const d=state.hist[s]; if(!d) return '';
+    const r=rsi(d.closes);
+    return {s,d,r};
+  }).filter(x=>x);
+  $('#watch').innerHTML = rows.map(({s,d,r})=>
+    `<tr><td><b>${s.replace('.NS','')}</b><div class="small">${d.name}</div></td>
+     <td class="num">${INR(d.price)}</td>
+     <td class="num ${d.chgPct>=0?'up':'down'}">${PCT(d.chgPct)}</td>
+     <td>${sparklineSVG(d.closes.slice(-30), d.chgPct>=0)}</td>
+     <td>${r==null?'—':r.toFixed(0)+' <span class="pill '+(r>70?'orange':r<30?'blue':'gray')+'">'+(r>70?'Overbought':r<30?'Oversold':'Neutral')+'</span>'}</td>
+     <td>—</td></tr>`).join('');
+  $('#marketTable').innerHTML = rows.map(({s,d})=>
+    `<tr style="cursor:pointer" onclick="showDetail('${s}')"><td><b>${s.replace('.NS','')}</b><div class="small">${d.name}</div></td>
+     <td class="num">${INR(d.price)}</td><td class="num ${d.chgPct>=0?'up':'down'}">${PCT(d.chgPct)}</td>
+     <td class="num">${(d.closes?'':'')}${d.dayHigh?((d.dayHigh/(d.price||1))).toFixed(0):''}${''}</td>
+     <td class="num">${INR(d.high52)}</td><td class="num">${INR(d.low52)}</td><td>—</td></tr>`).join('');
+  // fix volume column properly
+  $('#marketTable').innerHTML = rows.map(({s,d})=>
+    `<tr style="cursor:pointer" onclick="showDetail('${s}')"><td><b>${s.replace('.NS','')}</b><div class="small">${d.name}</div></td>
+     <td class="num">${INR(d.price)}</td><td class="num ${d.chgPct>=0?'up':'down'}">${PCT(d.chgPct)}</td>
+     <td class="num small">${d.closes.length? d.closes.length+' sessions':'—'}</td>
+     <td class="num">${INR(d.high52)}</td><td class="num">${INR(d.low52)}</td><td>—</td></tr>`).join('');
+  const idx=state.hist[INDEX];
+  if(idx){
+    $('#niftyVal').textContent=INR(idx.price);
+    $('#niftyChg').innerHTML='<span class="'+(idx.chgPct>=0?'up':'down')+'">'+PCT(idx.chgPct)+'</span>';
+    $('#breadth').textContent = rows.filter(x=>x.d.chgPct>=0).length+' / '+rows.length;
+    const top=[...rows].sort((a,b)=>(b.d.closes.at(-1)||0)-(a.d.closes.at(-1)||0))[0];
+    $('#volLeader').textContent=top.s.replace('.NS','');
+    $('#volAmt').textContent=top.d.name;
+  }
+}
+let charts={};
+function chartCommon(){const cs=getComputedStyle(document.documentElement);return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:cs.getPropertyValue('--muted')}}},scales:{x:{grid:{color:cs.getPropertyValue('--line')},ticks:{color:cs.getPropertyValue('--muted')}},y:{grid:{color:cs.getPropertyValue('--line')},ticks:{color:cs.getPropertyValue('--muted')}}}}}
+function lineChart(id,labels,data,color,label){
+  if(charts[id])charts[id].destroy();
+  const c=chartCommon();c.plugins.legend.display=true;
+  charts[id]=new Chart($('#'+id),{type:'line',data:{labels,datasets:[{label,data,borderColor:color,backgroundColor:color+'18',fill:true,tension:.3,pointRadius:0}]},options:c});
+}
+function renderDashboard(){
+  const idx=state.hist[INDEX];
+  if(idx&&idx.closes.length){
+    const labels=idx.closes.map((_,i)=>'D'+(i+1));
+    lineChart('niftyChart',labels,idx.closes,'#0052FF','NIFTY');
+  }
+  renderLedgerUI();
+}
+function showDetail(sym){
+  const d=state.hist[sym]; if(!d)return;
+  $('#detTitle').textContent=sym.replace('.NS','');
+  $('#detSub').textContent='Last '+d.closes.length+' trading days';
+  $('#detName').textContent=d.name;
+  const r=rsi(d.closes);
+  $('#detKpis').innerHTML=[
+    ['Live price',INR(d.price)],['Day change','<span class="'+(d.chgPct>=0?'up':'down')+'">'+PCT(d.chgPct)+'</span>'],
+    ['Prev close',INR(d.prevClose)],['Day range',INR(d.dayLow)+' – '+INR(d.dayHigh)],
+    ['52-week range',INR(d.low52)+' – '+INR(d.high52)],['RSI (14)',r==null?'—':r.toFixed(1)],
+    ['30-day change',(d.closes.length>22?'<span class="'+((d.price-d.closes[d.closes.length-22])>=0?'up':'down')+'">'+PCT((d.price-d.closes[d.closes.length-22])/d.closes[d.closes.length-22]*100)+'</span>':'—')]
+  ].map(x=>'<div class="kpi"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
+  lineChart('detChart',d.closes.map((_,i)=>'D'+(i+1)),d.closes,d.chgPct>=0?'#00C853':'#FF3B30','Close');
+}
+
+/* ================= LEDGER (persistent) ================= */
+const ledger = {
+  get(){ return JSON.parse(localStorage.getItem('finLedger')||'[]') },
+  set(v){ localStorage.setItem('finLedger', JSON.stringify(v)) },
+  add(e){ const a=this.get(); a.push(e); this.set(a) },
+  del(id){ this.set(this.get().filter(x=>x.id!==id)) }
+};
+function renderLedgerUI(){
+  const entries=[...ledger.get()].sort((a,b)=>b.date.localeCompare(a.date));
+  const now=new Date(); const ym=now.toISOString().slice(0,7);
+  const mIn=entries.filter(e=>e.date.startsWith(ym)&&e.type==='Income').reduce((s,e)=>s+e.amount,0);
+  const mOut=entries.filter(e=>e.date.startsWith(ym)&&e.type==='Expense').reduce((s,e)=>s+e.amount,0);
+  const tIn=entries.filter(e=>e.type==='Income').reduce((s,e)=>s+e.amount,0);
+  const tOut=entries.filter(e=>e.type==='Expense').reduce((s,e)=>s+e.amount,0);
+  const set=(id,v)=>$('#'+id).textContent=v;
+  set('mIncome',INR(mIn)); set('mExpense',INR(mOut)); set('mSurplus',INR(mIn-mOut));
+  set('mRate', mIn>0? ((mIn-mOut)/mIn*100).toFixed(1)+'%' : '—');
+  set('cash',INR(tIn-tOut)); set('income',INR(tIn)); set('expenses',INR(tOut));
+  set('cashSub', entries.length+' entries total'); set('incomeSub','All time'); set('expSub','All time');
+  set('mIncCnt', entries.filter(e=>e.date.startsWith(ym)&&e.type==='Income').length+' entries');
+  set('mExpCnt', entries.filter(e=>e.date.startsWith(ym)&&e.type==='Expense').length+' entries');
+  $('#ledgerBody').innerHTML = entries.length? entries.map(e=>
+    `<tr><td>${e.date}</td><td><span class="pill ${e.type==='Income'?'green':'red'}">${e.type}</span></td><td>${e.cat}</td>
+     <td class="num ${e.type==='Income'?'up':'down'}">${e.type==='Income'?'+':'−'}${INR(e.amount).slice(1)}</td>
+     <td class="small">${e.note||'—'}</td>
+     <td><button class="iconbtn" onclick="ledger.del('${e.id}');renderLedgerUI();toast('Entry deleted')">×</button></td></tr>`).join('')
+    : '<tr><td colspan="6" class="small" style="text-align:center;padding:30px">No entries yet — click “Add entry”</td></tr>';
+  // category chart
+  const cats={}; entries.filter(e=>e.type==='Expense').forEach(e=>cats[e.cat]=(cats[e.cat]||0)+e.amount);
+  const labels=Object.keys(cats);
+  if(charts.cat)charts.cat.destroy();
+  charts.cat=new Chart($('#catChart'),{type:'doughnut',data:{labels,datasets:[{data:Object.values(cats),backgroundColor:['#0052FF','#00C853','#8B5CF6','#FF9500','#FF3B30','#091E42','#2e7cff','#05D684','#667085']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:getComputedStyle(document.documentElement).getPropertyValue('--muted')}}}}});
+}
+$('#addMoney').onclick=()=>{ $('#entryDate').value=new Date().toISOString().slice(0,10); $('#modal').classList.add('show') };
+function closeModal(){$('#modal').classList.remove('show')}
+function saveEntry(){
+  const amt=parseFloat($('#entryAmount').value);
+  if(!amt||amt<=0){toast('Enter a valid amount');return}
+  ledger.add({id:Date.now()+'',type:$('#entryType').value,amount:amt,cat:$('#entryCat').value,date:$('#entryDate').value,note:$('#entryNote').value.trim()});
+  closeModal(); renderLedgerUI(); toast('Entry saved');
+}
+window.addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+
+/* ================= PORTFOLIO ================= */
+const holdings={
+  get(){return JSON.parse(localStorage.getItem('finHoldings')||'[]')},
+  set(v){localStorage.setItem('finHoldings',JSON.stringify(v))}
+};
+function addHolding(){
+  const qty=parseFloat($('#hQty').value), price=parseFloat($('#hPrice').value);
+  if(!qty||qty<=0||!price||price<=0){toast('Enter valid qty and price');return}
+  const sym=$('#hSym').value;
+  const a=holdings.get();
+  const ex=a.find(x=>x.sym===sym);
+  if(ex){ const tq=ex.qty+qty; ex.avgPrice=(ex.avgPrice*ex.qty+price*qty)/tq; ex.qty=tq; }
+  else a.push({sym,qty,price:price,avgPrice:price,date:$('#hDate').value});
+  holdings.set(a); renderPortfolio(); toast('Holding saved');
+}
+function delHolding(i){const a=holdings.get();a.splice(i,1);holdings.set(a);renderPortfolio()}
+function renderPortfolio(){
+  const a=holdings.get();
+  let inv=0,cur=0;
+  const rows=a.map((h,i)=>{
+    const d=state.hist[h.sym];
+    const live=d?d.price:h.avgPrice;
+    const c=live*h.qty, invested=h.avgPrice*h.qty, pnl=c-invested;
+    inv+=invested; cur+=c;
+    const pc=invested?pnl/invested*100:0;
+    return `<tr><td><b>${h.sym.replace('.NS','')}</b>${d?'':' <span class="pill gray">no live data</span>'}</td>
+      <td class="num">${h.qty}</td><td class="num">${INR(h.avgPrice)}</td><td class="num">${INR(live)}</td>
+      <td class="num">${INR(invested)}</td><td class="num">${INR(c)}</td>
+      <td class="num ${pnl>=0?'up':'down'}">${pnl>=0?'+':''}${INR(pnl).slice(1)} (${PCT(pc)})</td>
+      <td><button class="iconbtn" onclick="delHolding(${i})">×</button></td></tr>`;
+  });
+  $('#holdings').innerHTML=rows.join('')||'<tr><td colspan="8" class="small" style="text-align:center;padding:30px">No holdings yet</td></tr>';
+  $('#pInvested').textContent=INR(inv); $('#pCurrent').textContent=INR(cur);
+  const pnl=cur-inv; $('#pPnl').textContent=(pnl>=0?'+':'')+INR(pnl).slice(1); $('#pPnl').className='value '+(pnl>=0?'up':'down');
+  $('#pPnlPct').innerHTML=inv>0?'<span class="'+(pnl>=0?'up':'down')+'">'+PCT(pnl/inv*100)+'</span>':'—';
+  $('#pCount').textContent=a.length;
+  $('#portVal').textContent=INR(cur);
+  $('#portChg').innerHTML=inv>0?'<span class="'+(pnl>=0?'up':'down')+'">'+PCT(pnl/inv*100)+' all-time</span>':'Add holdings in Portfolio tab';
+  // allocation
+  const colors=['#0052FF','#00C853','#8B5CF6','#FF9500','#FF3B30','#091E42','#2e7cff','#05D684'];
+  const total=cur||1;
+  const parts=a.map((h,i)=>{const d=state.hist[h.sym];const v=(d?d.price:h.avgPrice)*h.qty;return{v,pct:v/total*100,sym:h.sym,c:colors[i%colors.length]}}).filter(x=>x.pct>0.5);
+  $('#allocBar').innerHTML=parts.map(p=>'<i style="width:'+p.pct.toFixed(1)+'%;background:'+p.c+'"></i>').join('');
+  $('#allocList').innerHTML=parts.map(p=>'<div class="kpi"><span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+p.c+';margin-right:8px"></span>'+p.sym.replace('.NS','')+'</span><b>'+p.pct.toFixed(1)+'%</b></div>').join('')||'<div class="kpi"><span>—</span><b>—</b></div>';
+}
+
+/* ================= PLANNER (precise FV with step-up + inflation) ================= */
+function calculatePlan(){
+  const s=+$('#start').value||0, m=+$('#monthly').value||0, y=Math.max(1,+$('#years').value||1);
+  const step=(+$('#stepup').value||0)/100, r=(+$('#rate').value||0)/100, infl=(+$('#infl').value||0)/100;
+  const monthly=r/12; let bal=s, contrib=s, pm=m;
+  const nominal=[s], real=[s];
+  for(let yr=0;yr<y;yr++){
+    for(let mo=0;mo<12;mo++){
+      bal=(bal+pm)*(1+monthly);
+      contrib+=pm;
+      nominal.push(bal);
+      real.push(bal/Math.pow(1+infl,(yr*12+mo+1)/12));
+    }
+    pm=pm*(1+step);
+  }
+  $('#contrib').textContent=INR(contrib);
+  $('#future').textContent=INR(bal);
+  $('#real').textContent=INR(bal/Math.pow(1+infl,y));
+  const labels=nominal.map((_,i)=>'M'+i);
+  if(charts.plan)charts.plan.destroy();
+  const c=chartCommon();c.plugins.legend.display=true;
+  charts.plan=new Chart($('#planChart'),{type:'line',data:{labels,datasets:[
+    {label:'Nominal',data:nominal,borderColor:'#0052FF',backgroundColor:'#0052FF10',fill:true,tension:.3,pointRadius:0},
+    {label:'Real (today\'s ₹)',data:real,borderColor:'#8B5CF6',backgroundColor:'#8B5CF610',fill:true,tension:.3,pointRadius:0},
+    {label:'Contributed',data:nominal.map((_,i)=>s+m*i),borderColor:'#667085',borderDash:[5,4],fill:false,pointRadius:0,tension:0}]},options:c});
+}
+function stress(){let p=+$('#pval').value||0,sh=+$('#shock').value||0,v=p*(1+sh/100),d=v-p;$('#stressValue').textContent=INR(v);$('#stressLoss').textContent=(d<0?'−':'+')+INR(Math.abs(d)).slice(1)}
+
+/* ================= MONTE CARLO ================= */
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function monteCarlo(){
+  const s=+$('#mcStart').value||0, add=+$('#mcAdd').value||0, y=Math.max(1,+$('#mcYears').value||1);
+  const mu=(+$('#mcRet').value||0)/100, vol=(+$('#mcVol').value||0)/100, infl=(+$('#mcInfl').value||0)/100;
+  const N=1000, finals=[]; const paths=[];
+  for(let n=0;n<N;n++){
+    let b=s; const path=[s];
+    for(let yr=0;yr<y;yr++){
+      const r=mu+vol*randn();
+      b=(b+add*12)*(1+r);
+      path.push(b);
+    }
+    finals.push(b/Math.pow(1+infl,y)); // real terms
+    if(n<50)paths.push(path.map((v,i)=>v/Math.pow(1+infl,i)));
+  }
+  finals.sort((a,b)=>a-b);
+  $('#mcMed').textContent=INR(finals[Math.floor(N*0.5)]);
+  $('#mcP10').textContent=INR(finals[Math.floor(N*0.1)]);
+  $('#mcP90').textContent=INR(finals[Math.floor(N*0.9)]);
+  if(charts.mc)charts.mc.destroy();
+  charts.mc=new Chart($('#mcChart'),{type:'line',data:{labels:paths[0].map((_,i)=>'Y'+i),datasets:paths.map(p=>({data:p,borderColor:'#0052FF10',borderWidth:1,pointRadius:0,tension:.2}))},options:(()=>{const c=chartCommon();c.plugins.legend.display=false;return c})()});
+  toast('1,000 paths simulated (50 drawn)');
+}
+
+/* ================= MISC ================= */
+function toast(t){$('#toast').textContent=t;$('#toast').style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>$('#toast').style.display='none',3200)}
+$('#refresh').onclick=()=>{loadMarket();toast('Refreshing live data…')};
+
+/* init */
+$('#hSym').innerHTML=SYMBOLS.map(s=>'<option>'+s+'</option>').join('');
+$('#hDate').value=new Date().toISOString().slice(0,10);
+lucide.createIcons();
+renderLedgerUI(); renderPortfolio(); calculatePlan(); stress();
+loadMarket();
+setInterval(loadMarket, 60000);
+</script>
+</body>
 </html>
